@@ -1,6 +1,7 @@
 import { HttpClient , HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-
+import { map } from 'rxjs/operators';
+ 
 @Injectable({
   providedIn: 'root'
 })
@@ -10,21 +11,47 @@ export class SpotifyService {
     console.log("spotify service listo");
   }
 
-  getNewRelease(){
+  getQuery(query:string){
    
+    const url=`https://api.spotify.com/v1/${query}`;
+
     const headers= new HttpHeaders({
-      'Authorization': 'Bearer BQDWytG01fWCCBav8hB0OH08FIIev6HbO5DQiiKLURUNHEeTHhx3h1nXM4PDaS0zN393GxbzTIKCcBIdukrkbFeNJi0hWsMvuLJ2KjKq_CUyYMP6ToxEw9O9tSv5s3XFzwq9H6LPvCzFFEXt00OBUt-Umhnxo4Ov_Q0'
+      'Authorization': 'Bearer BQB5y48I7vrph1_ESzMVX7tPPrM9eF1Nsm0oGo4_7odQyKEIMbYbHfnLqBmkavfWMSkfBmyT8H18RgRz9UJCCXo2mfLfEtVX-IyVvlAZGAwSoALh1w4mJRU51bR7aApoIrIJKbMImtrLx8vzuoG_ScKc3-qbdGIjhW4'
     });
 
-    return this.http.get('https://api.spotify.com/v1/browse/new-releases', { headers });
+    return this.http.get(url,{headers});
   }
 
- getArtista(termino:string){
-    const headers= new HttpHeaders({
-      'Authorization': 'Bearer BQDWytG01fWCCBav8hB0OH08FIIev6HbO5DQiiKLURUNHEeTHhx3h1nXM4PDaS0zN393GxbzTIKCcBIdukrkbFeNJi0hWsMvuLJ2KjKq_CUyYMP6ToxEw9O9tSv5s3XFzwq9H6LPvCzFFEXt00OBUt-Umhnxo4Ov_Q0'
-    });
+  getNewRelease(){
+    return this.getQuery('browse/new-releases').pipe(
+      map(data => {
+        return data['albums'].items
+      })
+    );
+  }
 
-    return this.http.get(`https://api.spotify.com/v1/search?q=${termino}&type=artist`, { headers }); 
+ getArtistas(termino:string){
+   return this.getQuery(`search?q=${termino}&type=artist`).pipe(
+    map(data => {
+      return data['artists'].items  
+    })
+  );                    
  }
+
+ getArtista(id:string){
+  return this.getQuery(`artists/${id}`).pipe(
+   map(data => {
+     return data;  
+   })
+ );                    
+}
+
+getTopTracks(id:string){
+  return this.getQuery(`artists/${id}/top-tracks?country=us`).pipe(
+    map(data => {
+      return data['tracks'];  
+    })
+  );  
+}
 
 }
